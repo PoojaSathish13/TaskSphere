@@ -67,7 +67,7 @@ export default function TeamPulsePage() {
     queryKey: ["team-pulse", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/tasks/pulse/");
-      return res.data;
+      return res.data.data;
     }
   });
 
@@ -77,7 +77,7 @@ export default function TeamPulsePage() {
     queryFn: async () => {
       if (!selectedMemberId) return [];
       const res = await apiClient.get("/api/v1/planner/tasks/");
-      const all: TaskItem[] = res.data.data || [];
+      const all: TaskItem[] = (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
       return all.filter((t: any) => t.assignee === selectedMemberId);
     },
     enabled: !!selectedMemberId

@@ -70,7 +70,7 @@ function MFAContent() {
     try {
       const res = await apiClient.post("/api/v1/auth/mfa/verify/", {
         mfa_token: mfaToken,
-        otp_code: otp,
+        code: otp,
       });
       const { access, refresh } = res.data?.data || {};
       if (access) {
@@ -78,7 +78,7 @@ function MFAContent() {
         localStorage.setItem("access_token", access);
         localStorage.setItem("refresh_token", refresh);
         setSuccess(true);
-        setTimeout(() => router.push("/"), 1500);
+        setTimeout(() => router.push("/dashboard"), 1500);
       }
     } catch (err: any) {
       setError(
@@ -147,6 +147,7 @@ function MFAContent() {
                     value={digit}
                     onChange={(e) => handleCodeChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
+                    autoComplete="one-time-code"
                     className={`h-12 w-10 text-center text-lg font-bold border rounded-xl bg-background text-foreground focus:outline-none transition ${
                       error
                         ? "border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500"

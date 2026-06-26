@@ -12,11 +12,12 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = [
-            'id', 'title', 'description', 'priority', 'status', 
-            'estimated_hours', 'actual_hours', 'due_date', 
-            'assignee', 'assignee_email', 'organization', 'organization_slug'
+            'id', 'title', 'description', 'priority', 'status',
+            'estimated_hours', 'actual_hours', 'due_date',
+            'assignee', 'assignee_email', 'organization', 'organization_slug',
+            'parent', 'project', 'is_client_visible'
         ]
-        read_only_fields = ['id', 'assignee_email', 'organization_slug']
+        read_only_fields = ['id', 'assignee_email', 'organization', 'organization_slug']
 
     def validate_estimated_hours(self, value):
         if value < 0:

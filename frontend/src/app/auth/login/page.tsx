@@ -82,10 +82,12 @@ export default function LoginPage() {
         {!mfaPending ? (
           <form className="space-y-4" onSubmit={handleLoginSubmit(onLoginSubmit)}>
             <div>
-              <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">Email</label>
+              <label htmlFor="login-email" className="block text-xs font-bold uppercase text-muted-foreground mb-1">Email</label>
               <input
+                id="login-email"
                 type="email"
                 {...registerLogin("email")}
+                autoComplete="email"
                 className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               {loginErrors.email && (
@@ -95,7 +97,7 @@ export default function LoginPage() {
 
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-bold uppercase text-muted-foreground">Password</label>
+                <label htmlFor="login-password" className="block text-xs font-bold uppercase text-muted-foreground">Password</label>
                 <Link
                   href="/auth/forgot-password"
                   className="text-xs text-primary hover:text-primary/80 transition"
@@ -104,8 +106,10 @@ export default function LoginPage() {
                 </Link>
               </div>
               <input
+                id="login-password"
                 type="password"
                 {...registerLogin("password")}
+                autoComplete="current-password"
                 className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               {loginErrors.password && (
@@ -118,6 +122,7 @@ export default function LoginPage() {
                 id="rememberMe"
                 type="checkbox"
                 {...registerLogin("rememberMe")}
+                autoComplete="off"
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary bg-background"
               />
               <label htmlFor="rememberMe" className="ml-2 block text-xs text-muted-foreground font-medium">
@@ -140,12 +145,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">Verification Code</label>
+              <label htmlFor="mfa-code" className="block text-xs font-bold uppercase text-muted-foreground mb-1">Verification Code</label>
               <input
+                id="mfa-code"
                 type="text"
                 maxLength={8}
                 {...registerMfa("code")}
                 placeholder="000 000"
+                autoComplete="one-time-code"
                 className="w-full text-center tracking-widest font-mono bg-background border border-input rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               {mfaErrors.code && (

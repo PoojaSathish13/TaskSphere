@@ -38,6 +38,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+        <div className="text-center">
+          <h2 className="text-xl font-bold tracking-tight">Access Denied</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Please authenticate to access this resource.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="flex h-screen items-center justify-center bg-background text-foreground p-4 select-none">
@@ -68,19 +81,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               Sign Out
             </button>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background text-foreground">
-        <div className="text-center">
-          <h2 className="text-xl font-bold tracking-tight">Access Denied</h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Please authenticate to access this resource.
-          </p>
         </div>
       </div>
     );

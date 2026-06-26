@@ -117,16 +117,18 @@ export default function RegisterPage() {
               {/* Name Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <label htmlFor="first_name" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     First Name
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
+                      id="first_name"
                       type="text"
                       name="first_name"
                       value={formData.first_name}
                       onChange={handleChange}
+                      autoComplete="given-name"
                       required
                       placeholder="Jane"
                       className="w-full pl-9 pr-3 py-2.5 bg-background border border-input rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
@@ -134,16 +136,18 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <label htmlFor="last_name" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     Last Name
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
+                      id="last_name"
                       type="text"
                       name="last_name"
                       value={formData.last_name}
                       onChange={handleChange}
+                      autoComplete="family-name"
                       required
                       placeholder="Doe"
                       className="w-full pl-9 pr-3 py-2.5 bg-background border border-input rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
@@ -154,16 +158,18 @@ export default function RegisterPage() {
 
               {/* Email */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label htmlFor="email" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Work Email
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
+                    id="email"
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    autoComplete="email"
                     required
                     placeholder="you@company.com"
                     className="w-full pl-9 pr-3 py-2.5 bg-background border border-input rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
@@ -173,16 +179,18 @@ export default function RegisterPage() {
 
               {/* Organization */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label htmlFor="organization_name" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Organization Name
                 </label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
+                    id="organization_name"
                     type="text"
                     name="organization_name"
                     value={formData.organization_name}
                     onChange={handleChange}
+                    autoComplete="organization"
                     placeholder="Acme Corp"
                     className="w-full pl-9 pr-3 py-2.5 bg-background border border-input rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
                   />
@@ -191,16 +199,18 @@ export default function RegisterPage() {
 
               {/* Password */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label htmlFor="password" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
+                    id="password"
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    autoComplete="new-password"
                     required
                     placeholder="Min. 8 characters"
                     className="w-full pl-9 pr-10 py-2.5 bg-background border border-input rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
@@ -225,16 +235,18 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label htmlFor="confirmPassword" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Confirm Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
+                    id="confirmPassword"
                     type={showConfirm ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    autoComplete="new-password"
                     required
                     placeholder="Re-enter password"
                     className="w-full pl-9 pr-10 py-2.5 bg-background border border-input rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"

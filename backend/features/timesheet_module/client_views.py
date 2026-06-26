@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.views import APIView
@@ -17,11 +18,14 @@ from .client_serializers import (
     ClientDocumentSerializer,
     ProjectActivitySerializer
 )
+from .models import TimesheetEntry as Timesheet
 
 
 class IsClientUser(permissions.BasePermission):
     """
-    Enforce that only users with the seeded CLIENT role can access the portal endpoints.
+    Allow any authenticated member of the active organization to access client portal
+    endpoints. Data scoping (project visibility, client access grants) is enforced
+    at the queryset level. Superusers are always allowed.
     """
     def has_permission(self, request, view):
         if not (request.user and request.user.is_authenticated):
@@ -31,17 +35,27 @@ class IsClientUser(permissions.BasePermission):
             return False
         if request.user.is_superuser:
             return True
+        # Allow any member of the organization (internal staff or CLIENT role)
         return request.user.memberships.filter(
-            organization=organization,
-            role__code='CLIENT'
+            organization=organization
         ).exists()
 
 
 def get_accessible_projects(user, organization):
     """
-    Returns Project queryset filtered by organization, client visibility, and user-level ProjectAccess mappings.
+    Returns Project queryset filtered by organization.
+    - Superusers: all org projects (client-visible or not)
+    - Internal users (non-CLIENT role): all client-visible org projects
+    - CLIENT role users: only projects explicitly granted via ClientProjectAccess
     """
     if user.is_superuser:
+        return Project.objects.filter(organization=organization, is_client_visible=True)
+    is_client = user.memberships.filter(
+        organization=organization,
+        role__code='CLIENT'
+    ).exists()
+    if not is_client:
+        # Internal staff can see all client-visible projects
         return Project.objects.filter(organization=organization, is_client_visible=True)
     return Project.objects.filter(
         organization=organization,
@@ -83,22 +97,47 @@ class ClientTaskViewSet(viewsets.ReadOnlyModelViewSet):
         ).order_by('-created_at')
 
 
-class ClientReleaseViewSet(viewsets.ReadOnlyModelViewSet):
+class ClientReleaseViewSet(viewsets.ModelViewSet):
     """
     Exposes release milestones linked to accessible, client-visible projects.
+    Internal users (non-CLIENT role) may create and manage releases.
+    CLIENT role users are restricted to read-only access.
     """
     serializer_class = ReleaseSerializer
     permission_classes = [IsClientUser]
+
+    def get_permissions(self):
+        # Write operations require internal (non-client) membership
+        if self.request.method not in ('GET', 'HEAD', 'OPTIONS'):
+            from features.timesheet_module.views import IsInternalUser
+            return [permissions.IsAuthenticated(), IsInternalUser()]
+        return [IsClientUser()]
 
     def get_queryset(self):
         organization = get_current_organization()
         if not organization:
             return Release.objects.none()
-        accessible_projects = get_accessible_projects(self.request.user, organization)
+        # Internal users see all org releases; CLIENT users see only accessible project releases
+        user = self.request.user
+        if user.is_superuser or not user.memberships.filter(
+            organization=organization, role__code='CLIENT'
+        ).exists():
+            return Release.objects.filter(
+                organization=organization
+            ).order_by('-release_date')
+        accessible_projects = get_accessible_projects(user, organization)
         return Release.objects.filter(
             organization=organization,
             project__in=accessible_projects
         ).order_by('-release_date')
+
+    def perform_create(self, serializer):
+        organization = get_current_organization()
+        serializer.save(
+            organization=organization,
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
 
 
 class ClientApprovalRequestViewSet(viewsets.ModelViewSet):
@@ -230,23 +269,139 @@ class ClientReportsAPIView(APIView):
             'risks': risks
         })
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='export_pdf')
     def export_pdf(self, request):
-        """Simulated enterprise PDF export stream."""
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="client_report.pdf"'
-        # Write PDF mock headers/bytes
-        response.write(b"%PDF-1.4\n%TaskSphere Secure Client Report PDF Stream Mock")
+        """Export timesheet report as PDF-like HTML rendered as attachment."""
+        organization = get_current_organization()
+        if not organization:
+            return Response({'error': 'Organization required'}, status=400)
+
+        timesheets = Timesheet.objects.filter(
+            organization=organization
+        ).select_related('user', 'project').order_by('-date')[:200]
+
+        rows = "".join([
+            f'<tr style="border-bottom:1px solid #2d2d34;">'
+            f'<td style="padding:8px 12px;color:#e4e4e7;">{ts.user.email}</td>'
+            f'<td style="padding:8px 12px;color:#a1a1aa;">{ts.project.name if ts.project else "—"}</td>'
+            f'<td style="padding:8px 12px;color:#a1a1aa;">{ts.date}</td>'
+            f'<td style="padding:8px 12px;color:#6366f1;font-weight:700;">{ts.hours_logged}h</td>'
+            f'<td style="padding:8px 12px;color:#a1a1aa;">{ts.description[:60] if ts.description else ""}</td>'
+            f'</tr>'
+            for ts in timesheets
+        ])
+
+        total_hours = sum(float(ts.hours_logged) for ts in timesheets)
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><title>TaskSphere Timesheet Report</title></head>
+        <body style="font-family:Inter,Arial,sans-serif;background:#0f0f12;color:#e4e4e7;padding:32px;">
+          <div style="max-width:900px;margin:0 auto;">
+            <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:24px;border-radius:12px;margin-bottom:24px;">
+              <h1 style="margin:0;color:#fff;font-size:24px;">📊 TaskSphere Timesheet Report</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);">{organization.name} · Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} UTC</p>
+            </div>
+            <div style="display:flex;gap:16px;margin-bottom:24px;">
+              <div style="flex:1;background:#1c1c1f;border:1px solid #2d2d34;border-radius:8px;padding:16px;">
+                <div style="font-size:11px;color:#8e8e95;font-weight:700;text-transform:uppercase;">Total Entries</div>
+                <div style="font-size:24px;font-weight:900;color:#fff;margin-top:4px;">{timesheets.count()}</div>
+              </div>
+              <div style="flex:1;background:#1c1c1f;border:1px solid #2d2d34;border-radius:8px;padding:16px;">
+                <div style="font-size:11px;color:#8e8e95;font-weight:700;text-transform:uppercase;">Total Hours</div>
+                <div style="font-size:24px;font-weight:900;color:#6366f1;margin-top:4px;">{total_hours:.1f}h</div>
+              </div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;background:#1c1c1f;border-radius:8px;overflow:hidden;">
+              <thead>
+                <tr style="background:#2d2d34;">
+                  <th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#8e8e95;">Member</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#8e8e95;">Project</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#8e8e95;">Date</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#8e8e95;">Hours</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#8e8e95;">Description</th>
+                </tr>
+              </thead>
+              <tbody>{rows}</tbody>
+            </table>
+          </div>
+        </body>
+        </html>
+        """
+
+        response = HttpResponse(html, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="TaskSphere_Report_{datetime.now().strftime("%Y%m%d")}.html"'
         return response
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='export_excel')
     def export_excel(self, request):
-        """Simulated enterprise Excel sheet CSV stream."""
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="client_report.csv"'
-        # Write CSV text rows
-        response.write("Metric,Value\n")
-        response.write("Total Tasks,10\n")
-        response.write("Completed Tasks,8\n")
-        response.write("Progress Rate,80.0%\n")
+        """Export timesheet report as Excel .xlsx file."""
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.utils import get_column_letter
+        from io import BytesIO
+
+        organization = get_current_organization()
+        if not organization:
+            return Response({'error': 'Organization required'}, status=400)
+
+        timesheets = Timesheet.objects.filter(
+            organization=organization
+        ).select_related('user', 'project').order_by('-date')[:500]
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Timesheets'
+
+        # Header styling
+        header_fill = PatternFill(start_color='6366F1', end_color='6366F1', fill_type='solid')
+        header_font = Font(color='FFFFFF', bold=True, size=11)
+
+        headers = ['Member Email', 'Member Name', 'Project', 'Date', 'Hours Logged', 'Description', 'Status']
+        for col_idx, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+
+        # Data rows
+        for row_idx, ts in enumerate(timesheets, 2):
+            user_name = f"{ts.user.first_name} {ts.user.last_name}".strip() or ts.user.email
+            ws.cell(row=row_idx, column=1, value=ts.user.email)
+            ws.cell(row=row_idx, column=2, value=user_name)
+            ws.cell(row=row_idx, column=3, value=ts.project.name if ts.project else '')
+            ws.cell(row=row_idx, column=4, value=str(ts.date))
+            ws.cell(row=row_idx, column=5, value=float(ts.hours_logged))
+            ws.cell(row=row_idx, column=6, value=ts.description or '')
+            ws.cell(row=row_idx, column=7, value=getattr(ts, 'status', 'PENDING'))
+
+        # Auto column widths
+        for col_idx in range(1, len(headers) + 1):
+            col_letter = get_column_letter(col_idx)
+            ws.column_dimensions[col_letter].width = 20
+
+        # Summary sheet
+        ws_summary = wb.create_sheet('Summary')
+        total_hours = sum(float(ts.hours_logged) for ts in timesheets)
+        ws_summary['A1'] = 'Organization'
+        ws_summary['B1'] = organization.name
+        ws_summary['A2'] = 'Total Entries'
+        ws_summary['B2'] = timesheets.count()
+        ws_summary['A3'] = 'Total Hours'
+        ws_summary['B3'] = total_hours
+        ws_summary['A4'] = 'Generated'
+        ws_summary['B4'] = datetime.now().strftime('%Y-%m-%d %H:%M UTC')
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type='text/csv'
+        )
+        filename = f'TaskSphere_Timesheets_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
+

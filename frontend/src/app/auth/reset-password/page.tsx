@@ -81,10 +81,12 @@ function ResetPasswordForm() {
       ) : (
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">New Password</label>
+            <label htmlFor="new-password" className="block text-xs font-bold uppercase text-muted-foreground mb-1">New Password</label>
             <input
+              id="new-password"
               type="password"
               {...register("newPassword")}
+              autoComplete="new-password"
               className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
             {errors.newPassword && (
@@ -93,10 +95,12 @@ function ResetPasswordForm() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">Confirm New Password</label>
+            <label htmlFor="confirm-password" className="block text-xs font-bold uppercase text-muted-foreground mb-1">Confirm New Password</label>
             <input
+              id="confirm-password"
               type="password"
               {...register("confirmPassword")}
+              autoComplete="new-password"
               className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
             {errors.confirmPassword && (

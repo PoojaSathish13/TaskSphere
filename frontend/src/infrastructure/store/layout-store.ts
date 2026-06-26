@@ -1,9 +1,14 @@
 import { create } from "zustand";
 
+export type BgPreset = "cotton-candy" | "sunset-dream" | "ocean-lavender" | "matcha-cream" | "blue-ocean";
+export type FontPreset = "sans" | "outfit" | "inter" | "lexend";
+
 interface LayoutState {
   isSidebarCollapsed: boolean;
   isCommandPaletteOpen: boolean;
   theme: "light" | "dark";
+  bgPreset: BgPreset;
+  fontPreset: FontPreset;
 
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
@@ -11,6 +16,8 @@ interface LayoutState {
   setCommandPaletteOpen: (open: boolean) => void;
   toggleTheme: () => void;
   setTheme: (theme: "light" | "dark") => void;
+  setBgPreset: (preset: BgPreset) => void;
+  setFontPreset: (preset: FontPreset) => void;
 }
 
 export const useLayoutStore = create<LayoutState>((set) => {
@@ -21,6 +28,8 @@ export const useLayoutStore = create<LayoutState>((set) => {
     isSidebarCollapsed: false,
     isCommandPaletteOpen: false,
     theme: initialTheme,
+    bgPreset: "cotton-candy",
+    fontPreset: "sans",
 
     toggleSidebar: () =>
       set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
@@ -56,6 +65,9 @@ export const useLayoutStore = create<LayoutState>((set) => {
       }
       set({ theme });
     },
+
+    setBgPreset: (preset) => set({ bgPreset: preset }),
+    setFontPreset: (preset) => set({ fontPreset: preset }),
   };
 });
 export default useLayoutStore;

@@ -1,3 +1,4 @@
+import stripe
 from datetime import date, timedelta
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
@@ -180,6 +181,119 @@ class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
         return Invoice.objects.filter(organization=organization).order_by('-created_at')
 
 
+class StripeCheckoutSessionView(APIView):
+    """
+    Creates a Stripe Checkout Session for the requested subscription plan.
+    Falls back to a simulated redirect URL when STRIPE_SECRET_KEY is absent.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from django.conf import settings
+        organization = get_current_organization()
+        if not organization:
+            return Response({'error': 'Active organization context required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        plan_code = request.data.get('plan_code')
+        if not plan_code:
+            return Response({'error': 'plan_code is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Simulated mode: no Stripe key configured
+        if not settings.STRIPE_SECRET_KEY:
+            return Response({
+                'checkout_url': 'http://localhost:3000/admin/billing?checkout=simulated',
+                'simulated': True
+            })
+
+        try:
+            plan = SubscriptionPlan.objects.get(code=plan_code)
+        except SubscriptionPlan.DoesNotExist:
+            return Response({'error': 'Subscription plan not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not plan.stripe_price_id:
+            return Response({'error': 'This plan does not have a Stripe price configured.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        # Get or create the Stripe customer
+        sub, _ = OrganizationSubscription.objects.get_or_create(
+            organization=organization,
+            defaults={
+                'plan': SubscriptionPlan.objects.get_or_create(
+                    code='FREE',
+                    defaults={'name': 'Free', 'price_monthly': 0.0, 'max_tasks': 50, 'max_members': 5}
+                )[0],
+                'status': 'ACTIVE',
+                'current_period_end': date.today() + timedelta(days=30)
+            }
+        )
+
+        if sub.stripe_customer_id:
+            stripe_customer_id = sub.stripe_customer_id
+        else:
+            customer = stripe.Customer.create(
+                email=request.user.email,
+                name=organization.name
+            )
+            stripe_customer_id = customer.id
+            sub.stripe_customer_id = stripe_customer_id
+            sub.save(update_fields=['stripe_customer_id'])
+
+        try:
+            session = stripe.checkout.Session.create(
+                customer=stripe_customer_id,
+                payment_method_types=['card'],
+                mode='subscription',
+                line_items=[{'price': plan.stripe_price_id, 'quantity': 1}],
+                success_url='http://localhost:3000/admin/billing?checkout=success',
+                cancel_url='http://localhost:3000/admin/billing?checkout=cancelled',
+            )
+        except stripe.error.StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+
+        return Response({'checkout_url': session.url, 'simulated': False})
+
+
+class StripeBillingPortalView(APIView):
+    """
+    Creates a Stripe Customer Billing Portal session so the user can manage
+    their payment methods and subscriptions directly on Stripe.
+    Falls back to a simulated URL when Stripe is not configured.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from django.conf import settings
+        organization = get_current_organization()
+        if not organization:
+            return Response({'error': 'Active organization context required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not settings.STRIPE_SECRET_KEY:
+            return Response({
+                'portal_url': 'http://localhost:3000/admin/billing?portal=simulated',
+                'simulated': True
+            })
+
+        sub = OrganizationSubscription.objects.filter(organization=organization).first()
+        if not sub or not sub.stripe_customer_id:
+            return Response({
+                'portal_url': 'http://localhost:3000/admin/billing?portal=simulated',
+                'simulated': True
+            })
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        try:
+            session = stripe.billing_portal.Session.create(
+                customer=sub.stripe_customer_id,
+                return_url='http://localhost:3000/admin/billing',
+            )
+        except stripe.error.StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+
+        return Response({'portal_url': session.url, 'simulated': False})
+
+
 class StripeWebhookView(APIView):
     """
     Processes incoming payment event webhooks from Stripe billing gateway.
@@ -187,7 +301,17 @@ class StripeWebhookView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        event = request.data
+        from django.conf import settings
+        payload = request.body
+        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE', '')
+        if settings.STRIPE_WEBHOOK_SECRET:
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            try:
+                event = stripe.Webhook.construct_event(payload, sig_header, settings.STRIPE_WEBHOOK_SECRET)
+            except (ValueError, stripe.error.SignatureVerificationError):
+                return Response({'error': 'Invalid signature'}, status=400)
+        else:
+            event = request.data
         event_type = event.get('type')
         data_obj = event.get('data', {}).get('object', {})
         

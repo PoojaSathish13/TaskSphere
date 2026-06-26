@@ -1,17 +1,31 @@
+# ──────────────────────────────────────────────
+# TaskSphere — Backend Dockerfile
+# Django + Daphne ASGI server
+# ──────────────────────────────────────────────
+
 FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Keeps Python from generating .pyc files and
+# ensures stdout/stderr are unbuffered for logs
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc python3-dev libpq-dev \
+# Install system dependencies (curl is needed for the healthcheck)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    gcc \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /app/
+# Install Python dependencies first (layer-cache friendly)
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app/
+# Copy application source
+COPY . .
 
 EXPOSE 8000
+
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "app.asgi:application"]

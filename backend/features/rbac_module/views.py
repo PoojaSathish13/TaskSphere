@@ -99,3 +99,24 @@ class SeedRBACView(APIView):
                 'meta': None,
                 'errors': [{'code': 'SEED_FAILURE', 'message': str(e), 'field': None}]
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+from django.contrib.auth import get_user_model
+from features.auth_module.serializers import UserSerializer
+
+User = get_user_model()
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Exposes platform users for directory search (e.g. inviting users by email).
+    """
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = User.objects.filter(is_active=True)
+        email = self.request.query_params.get('email')
+        if email:
+            queryset = queryset.filter(email__iexact=email)
+        return queryset
+

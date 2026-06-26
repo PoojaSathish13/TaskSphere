@@ -228,3 +228,20 @@ class TeamPulseAPIView(APIView):
         cache.set(cache_key, payload, 300)
 
         return Response(payload)
+
+
+class StandupSummaryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from features.planner_module.models import Task
+        from features.task_module.ai_standup import generate_standup
+        org = get_current_organization()
+        tasks = list(Task.objects.filter(organization=org).values('id', 'title', 'status', 'priority', 'due_date'))
+        # Convert dates to strings
+        for t in tasks:
+            if t.get('due_date'):
+                t['due_date'] = str(t['due_date'])
+        summary = generate_standup(tasks, org_name=org.name if org else 'Team')
+        return Response({'success': True, 'data': {'summary': summary}})
+

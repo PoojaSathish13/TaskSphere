@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/infrastructure/api/api-client";
 import { useAuthorization } from "@/features/rbac/hooks/useAuthorization";
+import { TaskCommentThread } from "./TaskCommentThread";
 import { 
   MessageSquare, 
   Paperclip, 
@@ -287,6 +288,10 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground font-semibold">Status:</span>
           <select
+            id="taskStatusDetail"
+            name="taskStatusDetail"
+            autoComplete="off"
+            aria-label="Status"
             value={task.status}
             onChange={(e) => updateStatusMutation.mutate(e.target.value)}
             disabled={!canEdit}
@@ -392,6 +397,10 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
                 className="flex gap-2 pt-2 border-t border-border/30"
               >
                 <input
+                  id="newSubtaskTitle"
+                  name="newSubtaskTitle"
+                  autoComplete="off"
+                  aria-label="New subtask checklist item"
                   type="text"
                   placeholder="New subtask checklist item..."
                   value={subtaskTitle}
@@ -407,40 +416,11 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
         )}
 
         {activeTab === "comments" && (
-          <div className="space-y-4">
-            {/* Comments List */}
-            <div className="space-y-3">
-              {commentsQuery.data?.length === 0 ? (
-                <div className="text-center text-muted-foreground py-6">No discussions yet. Spark the discussion.</div>
-              ) : (
-                commentsQuery.data?.map((comment) => (
-                  <div key={comment.id} className="p-3 bg-muted/10 border border-border/40 rounded-lg space-y-1">
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
-                      <span className="font-bold text-foreground">{comment.user_name}</span>
-                      <span className="font-mono">{new Date(comment.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-foreground leading-relaxed">{comment.content}</p>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Add Comment Box */}
-            <form
-              onSubmit={(e) => { e.preventDefault(); if (commentContent.trim()) createCommentMutation.mutate(commentContent); }}
-              className="flex gap-2 pt-2 border-t border-border/30"
-            >
-              <input
-                type="text"
-                placeholder="Share a project update..."
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
-                className="flex-1 bg-muted/20 border border-border rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
-              <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-3 flex items-center justify-center transition">
-                <Send className="h-3.5 w-3.5" />
-              </button>
-            </form>
+          <div className="h-[380px] -mx-4 -mb-4">
+            <TaskCommentThread
+              taskId={taskId}
+              currentUserEmail={typeof window !== "undefined" ? localStorage.getItem("user_email") ?? "" : ""}
+            />
           </div>
         )}
 
@@ -466,10 +446,10 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
             {/* Upload form button */}
             {canEdit && (
               <div className="pt-2 border-t border-border/35">
-                <label className="flex items-center justify-center border border-dashed rounded-lg border-border/80 hover:bg-muted/10 transition p-4 cursor-pointer">
+                <label htmlFor="taskAttachmentFile" className="flex items-center justify-center border border-dashed rounded-lg border-border/80 hover:bg-muted/10 transition p-4 cursor-pointer">
                   <Paperclip className="h-4 w-4 mr-1.5 text-muted-foreground" />
                   <span className="font-semibold text-muted-foreground">Attach reference document...</span>
-                  <input type="file" onChange={handleFileUpload} className="hidden" />
+                  <input id="taskAttachmentFile" name="taskAttachmentFile" autoComplete="off" type="file" onChange={handleFileUpload} className="hidden" />
                 </label>
               </div>
             )}
@@ -530,6 +510,10 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
                 <span className="font-bold text-muted-foreground uppercase text-[9px] tracking-wider">Create Custom Tag</span>
                 <div className="flex gap-2">
                   <input
+                    id="newLabelName"
+                    name="newLabelName"
+                    autoComplete="off"
+                    aria-label="Tag name"
                     type="text"
                     placeholder="Tag name..."
                     value={newLabelName}
@@ -537,6 +521,10 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
                     className="flex-1 bg-muted/20 border border-border rounded px-2.5 py-1 focus:outline-none"
                   />
                   <input
+                    id="newLabelColor"
+                    name="newLabelColor"
+                    autoComplete="off"
+                    aria-label="Tag color"
                     type="color"
                     value={newLabelColor}
                     onChange={(e) => setNewLabelColor(e.target.value)}
@@ -555,27 +543,11 @@ export const TaskManagementPanel: React.FC<TaskManagementPanelProps> = ({ taskId
         )}
 
         {activeTab === "logs" && (
-          <div className="space-y-3">
-            {logsQuery.data?.length === 0 ? (
-              <div className="text-center text-muted-foreground py-6">No historical records available.</div>
-            ) : (
-              logsQuery.data?.map((log) => (
-                <div key={log.id} className="flex gap-2.5 items-start pl-2 py-1 border-l border-border/60">
-                  <Activity className="h-3.5 w-3.5 text-indigo-400 shrink-0 mt-0.5" />
-                  <div>
-                    <div className="flex justify-between items-center gap-4 text-[9px] text-muted-foreground">
-                      <span className="font-mono">{log.user_email}</span>
-                      <span className="font-mono">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                    </div>
-                    <p className="text-[10px] text-foreground leading-normal mt-0.5">
-                      Updated <span className="font-bold">{log.field_changed}</span>: 
-                      {log.old_value && <span className="text-muted-foreground line-through mx-1">{log.old_value}</span>}
-                      <span className="text-indigo-400 font-semibold">{log.new_value}</span>
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="h-[380px] -mx-4 -mb-4">
+            <TaskCommentThread
+              taskId={taskId}
+              currentUserEmail={typeof window !== "undefined" ? localStorage.getItem("user_email") ?? "" : ""}
+            />
           </div>
         )}
       </div>

@@ -32,7 +32,7 @@ export default function RbacAdminPage() {
     queryKey: ["rbac-members"],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/rbac/members/");
-      return res.data.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     },
   });
 
@@ -41,7 +41,7 @@ export default function RbacAdminPage() {
     queryKey: ["rbac-roles"],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/rbac/roles/");
-      return res.data.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     },
   });
 
@@ -132,6 +132,9 @@ export default function RbacAdminPage() {
                     <td className="p-4 text-right">
                       {/* Role selection dropdown */}
                       <select
+                        id={`rbac-member-role-select-${member.id}`}
+                        name={`rbac-member-role-select-${member.id}`}
+                        aria-label={`Change role for ${member.user_name}`}
                         value={member.role}
                         onChange={(e) => handleRoleChange(member.id, e.target.value)}
                         className="bg-background text-foreground text-xs rounded border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring"

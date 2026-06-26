@@ -46,3 +46,22 @@ def test_redis_permission_caching(test_user, test_organization):
     # 3. Trigger cache eviction
     clear_permission_cache(test_user.id, test_organization.id)
     assert cache.get(cache_key) is None
+
+
+@pytest.mark.django_db
+def test_user_directory_lookup(api_client, test_user, test_organization):
+    """Verify that authenticated users can search other users by email."""
+    # Authenticate client
+    api_client.force_authenticate(user=test_user)
+    api_client.defaults['HTTP_X_ORGANIZATION_ID'] = str(test_organization.id)
+    
+    # 1. Search for user by email
+    response = api_client.get(f'/api/v1/rbac/users/?email={test_user.email}')
+    assert response.status_code == 200
+    
+    # Retrieve data
+    users_list = response.data
+    assert len(users_list) == 1
+    assert users_list[0]['email'] == test_user.email
+    assert users_list[0]['id'] == str(test_user.id)
+

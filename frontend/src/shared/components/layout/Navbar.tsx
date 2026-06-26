@@ -32,7 +32,7 @@ export const Navbar: React.FC = () => {
     : "U";
 
   return (
-    <header className="h-14 border-b border-border bg-card px-6 flex items-center justify-between gap-4 select-none shrink-0">
+    <header className="h-14 border-b border-[#d0d7de] bg-white px-6 flex items-center justify-between gap-4 select-none shrink-0">
       
       {/* Breadcrumbs Left Section */}
       <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ export const Navbar: React.FC = () => {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1.5 rounded-lg transition focus:outline-none"
           >
-            <span className="h-7 w-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+            <span className="h-6 w-6 rounded-full bg-slate-100 border border-[#d0d7de] flex items-center justify-center text-[9px] font-bold text-slate-600">
               {initials}
             </span>
             <div className="hidden sm:block text-left leading-tight">
@@ -89,21 +89,21 @@ export const Navbar: React.FC = () => {
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 top-12 bg-card border border-border rounded-xl shadow-lg z-50 py-1 w-52 overflow-hidden">
+            <div className="absolute right-0 top-12 bg-white border border-[#d0d7de] rounded-md shadow-md z-50 py-1 w-52 overflow-hidden">
               {/* User info header */}
               <div className="px-3 py-2.5 border-b border-border">
                 <p className="text-xs font-bold text-foreground truncate">
                   {user?.first_name} {user?.last_name}
                 </p>
                 <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
-                <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
+                <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-bold border border-[#d0d7de]">
                   <Shield className="h-2.5 w-2.5" />
                   {roleName || "Member"}
                 </span>
               </div>
 
               <Link
-                href="/settings/security"
+                href="/settings"
                 onClick={() => setIsProfileOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition"
               >

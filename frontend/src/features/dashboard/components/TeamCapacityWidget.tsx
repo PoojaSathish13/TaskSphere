@@ -22,7 +22,7 @@ export const TeamCapacityWidget: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center border-b pb-2">
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-          Team Capacity
+          Team Performance
         </span>
         <Users className="h-4 w-4 text-indigo-400" />
       </div>

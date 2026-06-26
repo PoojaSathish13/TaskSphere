@@ -126,9 +126,11 @@ export default function SecuritySettingsPage() {
           <h2 className="text-lg font-bold border-b pb-2">Change Password</h2>
           <form className="space-y-3" onSubmit={handlePasswordSubmit(onPasswordSubmit)}>
             <div>
-              <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">Current Password</label>
+              <label htmlFor="sec-current-password" className="block text-xs font-bold uppercase text-muted-foreground mb-1">Current Password</label>
               <input
+                id="sec-current-password"
                 type="password"
+                autoComplete="current-password"
                 {...registerPassword("oldPassword")}
                 className="w-full bg-background border border-input rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
@@ -138,9 +140,11 @@ export default function SecuritySettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">New Password</label>
+              <label htmlFor="sec-new-password" className="block text-xs font-bold uppercase text-muted-foreground mb-1">New Password</label>
               <input
+                id="sec-new-password"
                 type="password"
+                autoComplete="new-password"
                 {...registerPassword("newPassword")}
                 className="w-full bg-background border border-input rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
@@ -150,9 +154,11 @@ export default function SecuritySettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">Confirm New Password</label>
+              <label htmlFor="sec-confirm-password" className="block text-xs font-bold uppercase text-muted-foreground mb-1">Confirm New Password</label>
               <input
+                id="sec-confirm-password"
                 type="password"
+                autoComplete="new-password"
                 {...registerPassword("confirmPassword")}
                 className="w-full bg-background border border-input rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
@@ -201,9 +207,13 @@ export default function SecuritySettingsPage() {
               </div>
 
               <div>
+                <label htmlFor="sec-mfa-confirm-code" className="block text-xs font-bold uppercase text-muted-foreground mb-1">6-Digit TOTP Code</label>
                 <input
+                  id="sec-mfa-confirm-code"
                   type="text"
                   maxLength={6}
+                  autoComplete="one-time-code"
+                  aria-label="6-digit TOTP authenticator code"
                   {...registerMfaCode("code")}
                   placeholder="000 000"
                   className="w-full bg-background border border-input rounded text-center font-mono text-sm px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-ring"

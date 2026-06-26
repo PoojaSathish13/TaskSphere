@@ -24,6 +24,7 @@ class SubscriptionPlan(BaseModel):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=50, unique=True, db_index=True) # e.g. FREE, PRO, ENTERPRISE
     price_monthly = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
+    stripe_price_id = models.CharField(max_length=255, blank=True, default='')
     max_tasks = models.IntegerField(default=50)
     max_members = models.IntegerField(default=5)
     

@@ -23,7 +23,15 @@ import {
   CheckSquare,
   Target,
   Calendar,
-  ShieldAlert
+  ShieldAlert,
+  Clock,
+  Activity,
+  UserCheck,
+  Sliders,
+  Bell,
+  Folder,
+  Tag,
+  FileText
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -54,43 +62,49 @@ export const Sidebar: React.FC = () => {
   }, []);
 
   const navItems = [
-    { name: "Dashboard", href: "/", icon: <Monitor className="h-4 w-4" />, permission: "PROJECT_VIEW" },
-    { name: "Workspaces", href: "/workspace-select", icon: <Building className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Dashboard", href: "/dashboard", icon: <Monitor className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Projects", href: "/projects", icon: <Folder className="h-4 w-4" />, permission: "PROJECT_VIEW" },
     { name: "Tasks", href: "/tasks", icon: <CheckSquare className="h-4 w-4" />, permission: "PROJECT_VIEW" },
-    { name: "Daily Planner", href: "/planner", icon: <Calendar className="h-4 w-4" />, permission: "PROJECT_VIEW" },
-    { name: "Focus Mode", href: "/focus", icon: <Target className="h-4 w-4" />, permission: "PROJECT_VIEW" },
-    { name: "Blocker Center", href: "/blockers", icon: <ShieldAlert className="h-4 w-4" />, permission: "PROJECT_VIEW" },
-    { name: "Client Portal", href: "/client", icon: <Users className="h-4 w-4" />, permission: "PROJECT_VIEW" },
-    { name: "SaaS Settings", href: "/settings/saas", icon: <Settings className="h-4 w-4" />, permission: "ORG_MANAGE" },
-    { name: "Role Policies (RBAC)", href: "/settings/rbac", icon: <Shield className="h-4 w-4" />, permission: "ORG_MANAGE" },
+    { name: "Planner", href: "/planner", icon: <Calendar className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Blockers", href: "/blockers", icon: <ShieldAlert className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Standups", href: "/standups", icon: <UserCheck className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Timesheets", href: "/timesheets", icon: <Clock className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Productivity", href: "/productivity", icon: <Activity className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Releases", href: "/releases", icon: <Tag className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Client Portal", href: "/client-portal", icon: <Users className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Reports", href: "/reports", icon: <FileText className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Settings", href: "/settings", icon: <Settings className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "Workspaces", href: "/workspace-select", icon: <Building className="h-4 w-4" />, permission: "PROJECT_VIEW" },
+    { name: "SaaS Admin Panel", href: "/admin", icon: <Sliders className="h-4 w-4" />, permission: "ORG_MANAGE" },
   ];
+
 
   return (
     <aside
-      className={`border-r border-border bg-card flex flex-col justify-between transition-all duration-300 h-screen select-none ${
+      className={`border-r border-[#d0d7de] bg-[#f6f8fa] flex flex-col justify-between transition-all duration-300 h-full select-none ${
         isSidebarCollapsed ? "w-16" : "w-60"
       }`}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 flex flex-col min-h-0 flex-1">
         {/* Workspace Switcher Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between relative" ref={orgRef}>
+        <div className="p-4 border-b border-[#d0d7de] flex items-center justify-between relative" ref={orgRef}>
           {isSidebarCollapsed ? (
             <button
               onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-              className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center font-bold text-primary-foreground text-xs mx-auto focus:outline-none"
+              className="h-8 w-8 rounded-md bg-white border border-[#d0d7de] shadow-sm flex items-center justify-center font-black text-[#0969da] text-xs mx-auto focus:outline-none transition hover:bg-slate-50"
             >
-              {activeOrganization?.name.substring(0, 2).toUpperCase() || "TS"}
+              {activeOrganization?.name ? activeOrganization.name.substring(0, 2).toUpperCase() : "TS"}
             </button>
           ) : (
             <div className="flex-1 flex items-center justify-between gap-2 overflow-hidden">
               <button
                 onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-                className="flex items-center gap-2 text-left w-full hover:bg-muted/50 p-1.5 rounded-lg transition overflow-hidden focus:outline-none"
+                className="flex items-center gap-2 text-left w-full hover:bg-slate-50 p-1.5 rounded-md bg-white border border-[#d0d7de] shadow-sm transition overflow-hidden focus:outline-none"
               >
-                <span className="h-6 w-6 rounded bg-primary flex items-center justify-center font-bold text-primary-foreground text-xs shrink-0">
-                  {activeOrganization?.name.substring(0, 2).toUpperCase() || "TS"}
+                <span className="h-5 w-5 rounded bg-[#0969da] flex items-center justify-center font-bold text-white text-[9px] shrink-0">
+                  {activeOrganization?.name ? activeOrganization.name.substring(0, 2).toUpperCase() : "TS"}
                 </span>
-                <span className="font-bold text-xs truncate text-foreground flex-1">
+                <span className="font-extrabold text-[10px] uppercase tracking-wide truncate text-slate-700 flex-1">
                   {activeOrganization?.name || "TaskSphere"}
                 </span>
               </button>
@@ -101,7 +115,7 @@ export const Sidebar: React.FC = () => {
           {!isSidebarCollapsed && (
             <button
               onClick={toggleSidebar}
-              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition ml-1"
+              className="p-1 rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition ml-1"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
@@ -109,10 +123,10 @@ export const Sidebar: React.FC = () => {
 
           {/* Switcher Dropdown */}
           {isOrgDropdownOpen && (
-            <div className={`absolute top-14 bg-card border border-border rounded-xl shadow-lg z-dropdown py-1 w-52 overflow-hidden ${
+            <div className={`absolute top-14 bg-white border border-[#d0d7de] rounded-md shadow-md z-dropdown py-1 w-52 overflow-hidden ${
               isSidebarCollapsed ? "left-14" : "left-4"
             }`}>
-              <div className="text-[10px] font-bold text-muted-foreground px-3 py-1.5 uppercase border-b">
+              <div className="text-[10px] font-bold text-slate-400 px-3 py-1.5 uppercase border-b border-[#d0d7de]">
                 Switch workspace
               </div>
               {organizations.map((org) => (
@@ -122,8 +136,8 @@ export const Sidebar: React.FC = () => {
                     switchOrganization(org.id);
                     setIsOrgDropdownOpen(false);
                   }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted transition text-xs ${
-                    org.id === activeOrganization?.id ? "text-primary font-semibold" : "text-muted-foreground"
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-slate-50 transition text-xs ${
+                    org.id === activeOrganization?.id ? "text-[#0969da] font-bold" : "text-slate-500"
                   }`}
                 >
                   <Building className="h-3.5 w-3.5" />
@@ -135,15 +149,23 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Navigation Section */}
-        <nav className="px-3 space-y-1">
+        <nav className="px-3 space-y-1 overflow-y-auto flex-1">
           {navItems.map((item) => (
             <HasPermission key={item.name} permission={item.permission}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition duration-75 ${
-                  pathname === item.href
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                className={`flex items-center transition-all duration-150 ${
+                  isSidebarCollapsed 
+                    ? `justify-center h-8 w-8 mx-auto rounded-md ${
+                        pathname === item.href
+                          ? "bg-white text-[#0969da] border border-[#d0d7de] shadow-sm font-bold"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                      }`
+                    : `gap-3 px-3 py-2 rounded-md text-xs ${
+                        pathname === item.href
+                          ? "bg-white text-[#0969da] border border-[#d0d7de] shadow-sm font-bold"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                      }`
                 }`}
               >
                 <span className="shrink-0">{item.icon}</span>
@@ -155,27 +177,27 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Profile Section */}
-      <div className="p-3 border-t border-border relative" ref={userRef}>
+      <div className="p-3 border-t border-[#d0d7de] relative shrink-0" ref={userRef}>
         {isSidebarCollapsed ? (
           <button
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="h-8 w-8 rounded-full bg-muted border flex items-center justify-center text-xs font-bold text-primary mx-auto focus:outline-none"
+            className="h-8 w-8 rounded-full bg-white border border-[#d0d7de] shadow-sm flex items-center justify-center text-xs font-bold text-[#0969da] mx-auto focus:outline-none hover:bg-slate-50 transition"
           >
-            {user?.email.substring(0, 1).toUpperCase() || "U"}
+            {user?.email ? user.email.substring(0, 1).toUpperCase() : "U"}
           </button>
         ) : (
           <button
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="flex items-center gap-3 w-full hover:bg-muted/50 p-2 rounded-lg transition text-left focus:outline-none"
+            className="flex items-center gap-3 w-full hover:bg-slate-50 p-2 rounded-md bg-white border border-[#d0d7de] shadow-sm transition text-left focus:outline-none"
           >
-            <span className="h-8 w-8 rounded-full bg-muted border flex items-center justify-center text-xs font-bold text-primary shrink-0">
-              {user?.email.substring(0, 1).toUpperCase() || "U"}
+            <span className="h-7 w-7 rounded-full bg-slate-100 border border-[#d0d7de] flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+              {user?.email ? user.email.substring(0, 1).toUpperCase() : "U"}
             </span>
             <div className="overflow-hidden flex-1 leading-tight">
-              <p className="font-semibold text-xs text-foreground truncate">
+              <p className="font-bold text-xs text-slate-800 truncate">
                 {user?.first_name} {user?.last_name}
               </p>
-              <p className="text-[10px] text-muted-foreground truncate">{roleName || "Member"}</p>
+              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide truncate">{roleName || "Member"}</p>
             </div>
           </button>
         )}
@@ -184,7 +206,7 @@ export const Sidebar: React.FC = () => {
         {isSidebarCollapsed && (
           <button
             onClick={toggleSidebar}
-            className="absolute -top-3 -right-2 bg-background border border-border text-muted-foreground hover:text-foreground rounded-full p-0.5 shadow-md"
+            className="absolute -top-3 -right-2 bg-white border border-[#d0d7de] text-slate-500 hover:text-slate-800 rounded-full p-0.5 shadow-sm"
           >
             <ChevronRight className="h-3 w-3" />
           </button>
@@ -192,35 +214,35 @@ export const Sidebar: React.FC = () => {
 
         {/* User profile Menu Popover */}
         {isUserMenuOpen && (
-          <div className={`absolute bg-card border border-border rounded-xl shadow-lg z-dropdown py-1 w-48 overflow-hidden bottom-14 ${
+          <div className={`absolute bg-white border border-[#d0d7de] rounded-md shadow-md z-dropdown py-1 w-48 overflow-hidden bottom-14 ${
             isSidebarCollapsed ? "left-14" : "left-3"
           }`}>
             <Link
-              href="/settings/security"
+              href="/settings"
               onClick={() => setIsUserMenuOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition"
+              className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
             >
               <Settings className="h-3.5 w-3.5" />
-              <span>Security Settings</span>
+              <span>Settings</span>
             </Link>
             
             <Link
               href="#"
               onClick={() => setIsUserMenuOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition"
+              className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
             >
               <HelpCircle className="h-3.5 w-3.5" />
               <span>Docs / Help</span>
             </Link>
 
-            <div className="border-t my-1"></div>
+            <div className="border-t border-slate-100 my-1"></div>
             
             <button
               onClick={() => {
                 logout();
                 setIsUserMenuOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-rose-500/10 text-left transition"
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-rose-50/10 text-left transition"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Sign Out</span>

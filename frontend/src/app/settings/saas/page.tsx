@@ -120,7 +120,7 @@ export default function SaasSettingsPage() {
     queryKey: ["saas-workspaces", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/workspaces/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -128,7 +128,7 @@ export default function SaasSettingsPage() {
     queryKey: ["saas-plans", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/plans/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -136,7 +136,7 @@ export default function SaasSettingsPage() {
     queryKey: ["saas-subscription", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/subscription/");
-      return res.data;
+      return res.data.data;
     }
   });
 
@@ -144,7 +144,7 @@ export default function SaasSettingsPage() {
     queryKey: ["saas-usage", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/usage/");
-      return res.data;
+      return res.data.data;
     }
   });
 
@@ -152,7 +152,7 @@ export default function SaasSettingsPage() {
     queryKey: ["saas-logs", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/audit-logs/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -160,7 +160,7 @@ export default function SaasSettingsPage() {
     queryKey: ["saas-invoices", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/invoices/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -168,7 +168,7 @@ export default function SaasSettingsPage() {
     queryKey: ["rbac-roles", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/rbac/roles/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -176,7 +176,7 @@ export default function SaasSettingsPage() {
     queryKey: ["rbac-memberships", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/rbac/members/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -215,7 +215,7 @@ export default function SaasSettingsPage() {
   const upgradeSubscriptionMutation = useMutation({
     mutationFn: async (planCode: string) => {
       const res = await apiClient.post("/api/v1/organizations/subscription/", { plan_code: planCode });
-      return res.data;
+      return res.data.data;
     },
     onSuccess: (data) => {
       showToast(`Subscription plan updated to ${data.plan_name}`, "success");
@@ -232,7 +232,7 @@ export default function SaasSettingsPage() {
     mutationFn: async (payload: { email: string; role: string }) => {
       // Find user matching email, or simulation endpoints
       const userRes = await apiClient.get(`/api/v1/rbac/users/?email=${payload.email}`);
-      const matchedUser = userRes.data?.[0];
+      const matchedUser = userRes.data.data?.[0];
       if (!matchedUser) {
         throw new Error("User email does not exist in platform directory.");
       }
@@ -487,9 +487,12 @@ export default function SaasSettingsPage() {
                   
                   <form onSubmit={handleInviteMember} className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase font-bold text-[#8e8e95]">Member Email</label>
+                      <label htmlFor="saas-invite-email" className="text-[9px] uppercase font-bold text-[#8e8e95]">Member Email</label>
                       <input
+                        id="saas-invite-email"
+                        name="saas-invite-email"
                         type="email"
+                        autoComplete="email"
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
                         placeholder="user@organization.com"
@@ -499,8 +502,10 @@ export default function SaasSettingsPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase font-bold text-[#8e8e95]">Access Role</label>
+                      <label htmlFor="saas-invite-role" className="text-[9px] uppercase font-bold text-[#8e8e95]">Access Role</label>
                       <select
+                        id="saas-invite-role"
+                        name="saas-invite-role"
                         value={inviteRoleId}
                         onChange={(e) => setInviteRoleId(e.target.value)}
                         className="w-full bg-[#121214] border border-[#1f1f23] rounded-lg p-2.5 text-xs text-white focus:outline-none cursor-pointer"
@@ -571,9 +576,12 @@ export default function SaasSettingsPage() {
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">Initialize Workspace</h3>
                   <form onSubmit={handleCreateWorkspace} className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase font-bold text-[#8e8e95]">Workspace Name</label>
+                      <label htmlFor="saas-workspace-name" className="text-[9px] uppercase font-bold text-[#8e8e95]">Workspace Name</label>
                       <input
+                        id="saas-workspace-name"
+                        name="saas-workspace-name"
                         type="text"
+                        autoComplete="off"
                         value={workspaceName}
                         onChange={(e) => setWorkspaceName(e.target.value)}
                         placeholder="e.g. Engineering, Sales"
@@ -583,8 +591,10 @@ export default function SaasSettingsPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase font-bold text-[#8e8e95]">Description</label>
+                      <label htmlFor="saas-workspace-desc" className="text-[9px] uppercase font-bold text-[#8e8e95]">Description</label>
                       <textarea
+                        id="saas-workspace-desc"
+                        name="saas-workspace-desc"
                         value={workspaceDesc}
                         onChange={(e) => setWorkspaceDesc(e.target.value)}
                         placeholder="Define workspace goals..."

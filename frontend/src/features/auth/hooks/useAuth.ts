@@ -1,9 +1,12 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/infrastructure/api/api-client";
 import { useAuthStore } from "@/infrastructure/store/auth-store";
+import { useRouter } from "next/navigation";
 
 export const useAuth = () => {
   const { setTokens, setMfaPending, setUser, logout, isAuthenticated } = useAuthStore();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   // 1. Fetch User profile (Query)
   const profileQuery = useQuery({
@@ -50,6 +53,8 @@ export const useAuth = () => {
 
   const handleLogout = () => {
     logout();
+    queryClient.clear();
+    router.push("/auth/login");
   };
 
   return {

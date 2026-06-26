@@ -41,14 +41,16 @@ export default function WorkspaceSelectPage() {
   const [createError, setCreateError] = useState<string | null>(null);
 
   // Fetch workspaces for the active organization
-  const { data: workspaces = [], isLoading: loadingWorkspaces } = useQuery<WorkspaceItem[]>({
+  const { data: workspacesData, isLoading: loadingWorkspaces } = useQuery<WorkspaceItem[]>({
     queryKey: ["workspaces", activeOrganization?.id],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/organizations/workspaces/");
-      return res.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     },
     enabled: !!activeOrganization,
   });
+
+  const workspaces = React.useMemo(() => Array.isArray(workspacesData) ? workspacesData : [], [workspacesData]);
 
   // Create workspace mutation
   const createWorkspaceMutation = useMutation({
@@ -134,10 +136,13 @@ export default function WorkspaceSelectPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
+              id="search-orgs"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search organizations..."
+              autoComplete="off"
+              aria-label="Search organizations"
               className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
             />
           </div>
@@ -330,26 +335,30 @@ export default function WorkspaceSelectPage() {
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label htmlFor="workspace-name" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Workspace Name
                 </label>
                 <input
+                  id="workspace-name"
                   type="text"
                   value={newOrgName}
                   onChange={(e) => setNewOrgName(e.target.value)}
                   placeholder="e.g. Engineering Team"
+                  autoComplete="off"
                   className="w-full bg-background border border-input rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label htmlFor="workspace-description" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Description (optional)
                 </label>
                 <input
+                  id="workspace-description"
                   type="text"
                   value={newOrgSlug}
                   onChange={(e) => setNewOrgSlug(e.target.value)}
                   placeholder="e.g. Core backend and infra projects"
+                  autoComplete="off"
                   className="w-full bg-background border border-input rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
                 />
               </div>

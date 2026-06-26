@@ -231,6 +231,9 @@ export const KanbanBoard: React.FC = () => {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
+            id="kanbanSearchQuery"
+            name="kanbanSearchQuery"
+            autoComplete="off"
             type="text"
             placeholder="Search tasks by title..."
             value={searchQuery}
@@ -245,9 +248,13 @@ export const KanbanBoard: React.FC = () => {
           <div className="flex items-center gap-1.5 bg-muted/20 border border-border/80 rounded-lg px-2 py-1 text-xs">
             <Filter className="h-3.5 w-3.5 text-muted-foreground" />
             <select
+              id="kanbanFilterPriority"
+              name="kanbanFilterPriority"
+              autoComplete="off"
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
               className="bg-transparent border-0 text-[11px] font-bold focus:outline-none cursor-pointer"
+              aria-label="Filter by priority"
             >
               <option value="ALL">All Priorities</option>
               <option value="LOW">Low</option>
@@ -260,9 +267,13 @@ export const KanbanBoard: React.FC = () => {
           <div className="flex items-center gap-1.5 bg-muted/20 border border-border/80 rounded-lg px-2 py-1 text-xs">
             <Tag className="h-3.5 w-3.5 text-muted-foreground" />
             <select
+              id="kanbanFilterLabel"
+              name="kanbanFilterLabel"
+              autoComplete="off"
               value={filterLabel}
               onChange={(e) => setFilterLabel(e.target.value)}
               className="bg-transparent border-0 text-[11px] font-bold focus:outline-none cursor-pointer"
+              aria-label="Filter by label"
             >
               <option value="ALL">All Labels</option>
               {workspaceLabels.map(l => (
@@ -274,9 +285,13 @@ export const KanbanBoard: React.FC = () => {
           <div className="flex items-center gap-1.5 bg-muted/20 border border-border/80 rounded-lg px-2 py-1 text-xs">
             <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
             <select
+              id="kanbanSortBy"
+              name="kanbanSortBy"
+              autoComplete="off"
               value={sortBy}
               onChange={(e: any) => setSortBy(e.target.value)}
               className="bg-transparent border-0 text-[11px] font-bold focus:outline-none cursor-pointer"
+              aria-label="Sort by attribute"
             >
               <option value="priority">Priority</option>
               <option value="due_date">Due Date</option>

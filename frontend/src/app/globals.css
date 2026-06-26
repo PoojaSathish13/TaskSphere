@@ -4,85 +4,85 @@
 
 @layer base {
   :root {
-    /* --- Premium Light Mode: White & Ocean Blue System Tokens --- */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* --- GitHub Light Mode Base Variables --- */
+    --background: 220 14% 96%; /* #f6f8fa */
+    --foreground: 220 12% 16%; /* #24292f */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 220 12% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 220 12% 16%;
 
-    --primary: 201 96% 40%; /* Rich Ocean Blue (#0284c7) */
+    --primary: 140 56% 41%; /* #2da44e (GitHub Green) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 204 40% 94%;
-    --secondary-foreground: 201 96% 25%;
+    --secondary: 220 14% 93%; /* #f3f4f6 */
+    --secondary-foreground: 220 12% 16%;
 
-    --muted: 204 30% 95%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 14% 93%; /* #f3f4f6 */
+    --muted-foreground: 220 9% 38%; /* #57606a */
 
-    --accent: 199 89% 48%;
+    --accent: 212 92% 45%; /* #0969da (GitHub Blue) */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 346 84% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 354 84% 44%; /* #cf222e */
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
+    --success: 140 56% 41%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
+    --warning: 35 92% 47%; /* #bf8700 */
+    --warning-foreground: 220 12% 16%;
 
-    --info: 199 89% 48%;
+    --info: 212 92% 45%;
     --info-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 201 96% 40%;
+    --border: 220 13% 89%; /* #d0d7de */
+    --input: 220 13% 89%;
+    --ring: 212 92% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem; /* Standard GitHub radius (6px-8px) */
   }
 
+  /* Force light theme by disabling system dark variables override */
   .dark {
-    /* --- Premium Dark Mode: Deep Navy & Electric Cyan System Tokens --- */
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
+    --background: 220 14% 96%;
+    --foreground: 220 12% 16%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 12% 16%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 12% 16%;
 
-    --primary: 199 89% 55%; /* Electric Sky Blue */
-    --primary-foreground: 222 47% 7%;
+    --primary: 140 56% 41%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 47% 15%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 12% 16%;
 
-    --muted: 222 47% 15%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 9% 38%;
 
-    --accent: 187 92% 53%; /* Electric Cyan */
-    --accent-foreground: 222 47% 7%;
+    --accent: 212 92% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 346 84% 58%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 354 84% 44%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 55%;
-    --success-foreground: 0 0% 98%;
+    --success: 140 56% 41%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 55%;
-    --warning-foreground: 222 47% 7%;
+    --warning: 35 92% 47%;
+    --warning-foreground: 220 12% 16%;
 
-    --info: 199 89% 58%;
-    --info-foreground: 0 0% 98%;
+    --info: 212 92% 45%;
+    --info-foreground: 0 0% 100%;
 
-    --border: 222 47% 16%;
-    --input: 222 47% 16%;
-    --ring: 199 89% 55%;
+    --border: 220 13% 89%;
+    --input: 220 13% 89%;
+    --ring: 212 92% 45%;
   }
 }
 
@@ -91,50 +91,211 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    background: #f6f8fa !important;
+    color: #24292f !important;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-sans), system-ui, sans-serif;
   }
 }
 
-/* Custom interactive animation utilities */
+/* --- Dynamic Font Presets --- */
 @layer utilities {
+  .font-sans {
+    font-family: var(--font-sans), system-ui, sans-serif !important;
+  }
+  .font-outfit {
+    font-family: var(--font-outfit), system-ui, sans-serif !important;
+  }
+  .font-inter {
+    font-family: var(--font-inter), system-ui, sans-serif !important;
+  }
+  .font-lexend {
+    font-family: var(--font-lexend), system-ui, sans-serif !important;
+  }
+}
+
+/* --- Premium Pastel Glassmorphic Overrides & Utilities --- */
+@layer utilities {
+  .bg-preset-cotton-candy,
+  .bg-preset-sunset-dream,
+  .bg-preset-ocean-lavender,
+  .bg-preset-matcha-cream,
+  .bg-preset-blue-ocean {
+    background: #f6f8fa !important;
+  }
   .transition-linear {
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .bg-glass {
-    background: rgba(18, 18, 22, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid #d0d7de !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
   }
 
   .glass-card {
-    background: rgba(22, 22, 26, 0.45);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d0d7de !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    transition: all 150ms ease;
   }
 
   .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+    transform: none !important;
+    border-color: #8c959f !important;
+    box-shadow: 0 3px 6px rgba(140, 149, 159, 0.15) !important;
+  }
+}
+
+  /* Override hardcoded dark-mode background widgets to flat GitHub surfaces */
+  [class*="bg-[#0a0a0c]"],
+  [class*="bg-[#0e0e11]"],
+  [class*="bg-[#121214]"],
+  [class*="bg-[#161618]"],
+  [class*="bg-[#161619]"],
+  [class*="bg-[#1c1c1f]"],
+  [class*="bg-[#212124]"],
+  [class*="bg-[#2c2c31]"],
+  [class*="bg-zinc-800"],
+  [class*="bg-slate-800"] {
+    background-color: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* Soft sub-panels and headers */
+  [class*="bg-[#0a0a0c]"],
+  [class*="bg-[#0e0e11]"],
+  [class*="bg-[#161619]/"],
+  [class*="bg-[#1c1c1f]/"],
+  [class*="bg-[#121214]/"],
+  [class*="bg-[#212124]"],
+  [class*="bg-[#2c2c31]"],
+  [class*="bg-zinc-800/10"],
+  [class*="bg-zinc-800/50"],
+  [class*="bg-zinc-900/10"] {
+    background-color: #f6f8fa !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Override hardcoded dark-mode borders to GitHub Light borders */
+  [class*="border-[#1f1f23]"],
+  [class*="border-[#2d2d34]"],
+  [class*="border-zinc-800"],
+  [class*="border-zinc-900"],
+  .border-border {
+    border-color: #d0d7de !important;
+  }
+
+  /* Override text white styles to GitHub dark-slate text */
+  h1.text-white, h2.text-white, h3.text-white, h4.text-white, span.text-white, p.text-white, strong.text-white {
+    color: #24292f !important;
+  }
+
+  /* Override secondary buttons and links to have readable green text and matching green borders */
+  button.text-white:not([class*="bg-indigo"]):not([class*="bg-primary"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-amber"]),
+  a.text-white:not([class*="bg-indigo"]):not([class*="bg-primary"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-amber"]) {
+    color: #2da44e !important;
+    background-color: #ffffff !important;
+    border: 1px solid #2da44e !important;
+  }
+
+  button.text-white:not([class*="bg-indigo"]):not([class*="bg-primary"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-amber"]):hover,
+  a.text-white:not([class*="bg-indigo"]):not([class*="bg-primary"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-amber"]):hover {
+    background-color: #f0f9f0 !important;
+    border-color: #2c974b !important;
+    color: #2c974b !important;
+  }
+
+
+  /* Override neutral texts to GitHub muted texts */
+  [class*="text-[#8e8e95]"],
+  [class*="text-[#c5c5ca]"] {
+    color: #57606a !important;
+  }
+
+  /* Map indigo styling to GitHub Green (primary buttons) and GitHub Blue (links) */
+  [class*="bg-indigo-600"],
+  [class*="bg-indigo-700"],
+  [class*="bg-indigo-500"],
+  .bg-primary {
+    background-color: #2da44e !important;
+  }
+  [class*="bg-indigo-600"]:hover,
+  [class*="bg-indigo-700"]:hover,
+  [class*="bg-indigo-500"]:hover,
+  .bg-primary:hover {
+    background-color: #2c974b !important;
+  }
+  [class*="text-indigo-600"],
+  [class*="text-indigo-500"],
+  [class*="text-indigo-400"] {
+    color: #0969da !important;
+  }
+
+  /* Text color corrections for active primary/accent actions */
+  .bg-indigo-600, .bg-indigo-600 *,
+  .bg-indigo-700, .bg-indigo-700 *,
+  .bg-rose-500, .bg-rose-500 *,
+  .bg-rose-600, .bg-rose-600 *,
+  .bg-emerald-500, .bg-emerald-500 *,
+  .bg-emerald-600, .bg-emerald-600 *,
+  .bg-primary, .bg-primary *,
+  button[type="submit"], button.bg-indigo-600,
+  span.bg-indigo-500, span.bg-indigo-500 * {
+    color: #ffffff !important;
+  }
+
+  /* Form controls styled like GitHub inputs */
+  input, select, textarea {
+    background-color: #ffffff !important;
+    color: #24292f !important;
+    border: 1px solid #d0d7de !important;
+    border-radius: 6px !important;
+    box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2) !important;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #0969da !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3) !important;
+  }
+
+  /* Sidebar and Header panels matching GitHub UI structure */
+  aside {
+    background: #f6f8fa !important;
+    backdrop-filter: none !important;
+    border-right: 1px solid #d0d7de !important;
+  }
+  header {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border-bottom: 1px solid #d0d7de !important;
+  }
+
+  /* Override bubbly corners to flat GitHub corners */
+  [class*="rounded-xl"],
+  [class*="rounded-2xl"],
+  [class*="rounded-[2.1rem]"] {
+    border-radius: var(--radius) !important;
   }
 
   .animate-slide-up {
-    animation: slideUp 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-pulse-skeleton {
     animation: pulseSkeleton 1.8s ease-in-out infinite;
   }
-}
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -144,11 +305,36 @@
 
 @keyframes pulseSkeleton {
   0%, 100% {
-    opacity: 0.4;
+    opacity: 0.6;
   }
   50% {
-    opacity: 0.85;
+    opacity: 0.9;
   }
+}
+
+/* Disable background blur floats */
+.animate-orb-float-1,
+.animate-orb-float-2 {
+  animation: none !important;
+  display: none !important;
+}
+
+.transition-spring {
+  transition: all 150ms ease;
+}
+
+.glass-card-premium {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border: 1px solid #d0d7de !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  transition: all 150ms ease;
+}
+
+.glass-card-premium:hover {
+  transform: none !important;
+  border-color: #8c959f !important;
+  box-shadow: 0 3px 6px rgba(140, 149, 159, 0.15) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -159,3 +345,23 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Custom Scrollbar for navigation tabs */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px !important;
+  display: block !important;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #eaeef2 !important;
+  border-radius: 4px !important;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #8c959f !important;
+  border-radius: 4px !important;
+  border: 2px solid #eaeef2 !important;
+}
+.custom-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: #8c959f #eaeef2 !important;
+}
+

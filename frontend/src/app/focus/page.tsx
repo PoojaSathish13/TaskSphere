@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/infrastructure/api/api-client";
 import { ProtectedRoute } from "@/features/rbac/components/ProtectedRoute";
@@ -78,7 +78,7 @@ export default function FocusPage() {
     queryKey: ["planner-all-tasks", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/planner/tasks/");
-      const all: TaskItem[] = res.data.data || [];
+      const all: TaskItem[] = (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
       return all.filter(t => t.due_date === todayStr && t.status !== "DONE");
     }
   });
@@ -88,7 +88,7 @@ export default function FocusPage() {
     queryKey: ["productivity-metrics-trend", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/focus/metrics/");
-      return res.data.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -97,7 +97,7 @@ export default function FocusPage() {
     queryKey: ["productivity-streak", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/focus/metrics/streak/");
-      return res.data.streak || 0;
+      return res.data.data?.streak || 0;
     }
   });
 
@@ -106,7 +106,7 @@ export default function FocusPage() {
     queryKey: ["focus-sessions-history", activeOrganizationId],
     queryFn: async () => {
       const res = await apiClient.get("/api/v1/focus/sessions/");
-      return res.data.data || [];
+      return (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
     }
   });
 
@@ -114,7 +114,7 @@ export default function FocusPage() {
   const startSessionMutation = useMutation({
     mutationFn: async (taskId: string) => {
       const res = await apiClient.post("/api/v1/focus/sessions/start/", { task: taskId });
-      return res.data;
+      return res.data.data;
     },
     onSuccess: (data) => {
       setActiveSession(data);
@@ -171,6 +171,16 @@ export default function FocusPage() {
     }
   });
 
+  const handleCompleteTimer = useCallback((markDone: boolean) => {
+    if (!activeSession) return;
+    stopSessionMutation.mutate({
+      id: activeSession.id,
+      duration_seconds: timeSeconds,
+      context_switches: switches,
+      completed_task: markDone
+    });
+  }, [activeSession, timeSeconds, switches, stopSessionMutation]);
+
   // Timer Tick Logic (Counts down or counts up based on selected Pomodoro type)
   useEffect(() => {
     if (isRunning) {
@@ -193,7 +203,7 @@ export default function FocusPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, targetDuration, activeSession]);
+  }, [isRunning, targetDuration, activeSession, handleCompleteTimer]);
 
   // Context Switch Tracking: Trigger switches when selecting task cards during lock mode
   const handleSelectTaskForFocus = (task: TaskItem) => {
@@ -225,15 +235,7 @@ export default function FocusPage() {
     setIsRunning(true);
   };
 
-  const handleCompleteTimer = (markDone: boolean) => {
-    if (!activeSession) return;
-    stopSessionMutation.mutate({
-      id: activeSession.id,
-      duration_seconds: timeSeconds,
-      context_switches: switches,
-      completed_task: markDone
-    });
-  };
+
 
   const formatTimer = (totalSeconds: number) => {
     const remaining = targetDuration - totalSeconds;

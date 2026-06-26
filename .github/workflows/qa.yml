@@ -1,0 +1,327 @@
+name: 🚀 TaskSphere QA Pipeline
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PYTHON_VERSION: "3.11"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JOB 1 ─ Frontend: Jest Unit Tests
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  frontend-unit-tests:
+    name: 🧪 Frontend Unit Tests (Jest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: 🧪 Run Jest unit tests
+        run: npm run test -- --ci --coverage --coverageReporters=text --coverageReporters=lcov
+
+      - name: 📊 Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-coverage-report
+          path: frontend/coverage/
+          retention-days: 7
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JOB 2 ─ Backend: Pytest
+# ─────────────────────────────────────────────────────────────────────────────
+  backend-tests:
+    name: 🐍 Backend Tests (Pytest + Django)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: tasksphere_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: 📦 Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: 🗄️ Run Django migrations
+        env:
+          DEBUG: "True"
+          SECRET_KEY: "ci-test-secret-key-tasksphere-github-actions"
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/tasksphere_db"
+          REDIS_URL: "redis://localhost:6379/0"
+          CELERY_BROKER_URL: "redis://localhost:6379/0"
+          CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+        run: python manage.py migrate --noinput
+
+      - name: 🧪 Run pytest
+        env:
+          DEBUG: "True"
+          SECRET_KEY: "ci-test-secret-key-tasksphere-github-actions"
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/tasksphere_db"
+          REDIS_URL: "redis://localhost:6379/0"
+          CELERY_BROKER_URL: "redis://localhost:6379/0"
+          CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+        run: pytest --tb=short -q --junitxml=pytest-report.xml
+
+      - name: 📊 Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: backend/pytest-report.xml
+          retention-days: 7
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JOB 3 ─ Frontend: Playwright E2E Tests
+# (runs after both unit-test jobs succeed)
+# ─────────────────────────────────────────────────────────────────────────────
+  e2e-tests:
+    name: 🎭 E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [frontend-unit-tests, backend-tests]
+    defaults:
+      run:
+        working-directory: frontend
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: tasksphere_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: ⚙️ Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install backend Python dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: 🗄️ Run Django migrations
+        working-directory: backend
+        env:
+          DEBUG: "True"
+          SECRET_KEY: "ci-test-secret-key-tasksphere-github-actions"
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/tasksphere_db"
+          REDIS_URL: "redis://localhost:6379/0"
+          CELERY_BROKER_URL: "redis://localhost:6379/0"
+          CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+        run: python manage.py migrate --noinput
+
+      - name: 🌱 Seed demo users for E2E tests
+        working-directory: backend
+        env:
+          DEBUG: "True"
+          SECRET_KEY: "ci-test-secret-key-tasksphere-github-actions"
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/tasksphere_db"
+          REDIS_URL: "redis://localhost:6379/0"
+          CELERY_BROKER_URL: "redis://localhost:6379/0"
+          CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+        run: |
+          python manage.py shell -c "
+          from django.contrib.auth import get_user_model
+          User = get_user_model()
+          if not User.objects.filter(email='admin@tasksphere.com').exists():
+              User.objects.create_superuser(email='admin@tasksphere.com', password='Admin@123', username='admin')
+              print('Demo superuser created.')
+          else:
+              print('Demo user already exists.')
+          "
+
+      - name: 🚀 Start Django backend server
+        working-directory: backend
+        env:
+          DEBUG: "True"
+          SECRET_KEY: "ci-test-secret-key-tasksphere-github-actions"
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/tasksphere_db"
+          REDIS_URL: "redis://localhost:6379/0"
+          CELERY_BROKER_URL: "redis://localhost:6379/0"
+          CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+        run: |
+          python manage.py runserver 0.0.0.0:8000 &
+          echo "Waiting for backend to be ready..."
+          for i in $(seq 1 20); do
+            curl -sf http://localhost:8000/api/v1/auth/token/ > /dev/null 2>&1 && echo "Backend ready!" && break
+            echo "Attempt $i: backend not ready, waiting..."
+            sleep 3
+          done
+
+      - name: 📦 Install frontend dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: 🎭 Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: 🧪 Run Playwright E2E tests
+        env:
+          CI: "true"
+          NEXT_PUBLIC_API_URL: "http://localhost:8000"
+        run: npx playwright test --reporter=html
+
+      - name: 📊 Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+      - name: 📸 Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-screenshots
+          path: frontend/test-results/
+          retention-days: 7
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JOB 4 ─ QA Health Score Summary
+# ─────────────────────────────────────────────────────────────────────────────
+  qa-summary:
+    name: 📋 QA Health Score Summary
+    runs-on: ubuntu-latest
+    needs: [frontend-unit-tests, backend-tests, e2e-tests]
+    if: always()
+
+    steps:
+      - name: 📊 Compute and post QA summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              unit:    '${{ needs.frontend-unit-tests.result }}',
+              backend: '${{ needs.backend-tests.result }}',
+              e2e:     '${{ needs.e2e-tests.result }}',
+            };
+
+            const icon  = r => r === 'success' ? '🟢' : r === 'skipped' ? '⚪' : '🔴';
+            const label = r => r === 'success' ? 'PASSED' : r === 'skipped' ? 'SKIPPED' : 'FAILED';
+
+            let score = 0;
+            if (results.unit    === 'success') score += 30;
+            if (results.backend === 'success') score += 30;
+            if (results.e2e     === 'success') score += 40;
+
+            const emoji = score === 100 ? '🏆' : score >= 60 ? '⚠️' : '🚨';
+
+            const body = [
+              `## ${emoji} TaskSphere QA Health Report`,
+              ``,
+              `| Check | Status |`,
+              `|:------|:-------|`,
+              `| 🧪 Frontend Unit Tests (Jest)  | ${icon(results.unit)} ${label(results.unit)} |`,
+              `| 🐍 Backend Tests (Pytest)       | ${icon(results.backend)} ${label(results.backend)} |`,
+              `| 🎭 E2E Tests (Playwright)       | ${icon(results.e2e)} ${label(results.e2e)} |`,
+              ``,
+              `### Overall Project Health Score: **${score} / 100**`,
+              ``,
+              `> Triggered by \`${{ github.event_name }}\` on branch \`${{ github.ref_name }}\` — commit \`${{ github.sha }}\``,
+            ].join('\n');
+
+            if (context.eventName === 'pull_request') {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            }
+
+            core.summary.addRaw(body);
+            await core.summary.write();
+
+            if (score < 100) {
+              core.setFailed(`QA Health Score: ${score}/100. Fix failing checks before merging.`);
+            }

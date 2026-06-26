@@ -8,7 +8,9 @@ from .views_saas import (
     TenantUsageAPIView,
     SaasAuditLogViewSet,
     InvoiceViewSet,
-    StripeWebhookView
+    StripeWebhookView,
+    StripeCheckoutSessionView,
+    StripeBillingPortalView
 )
 
 router = DefaultRouter()
@@ -22,5 +24,7 @@ urlpatterns = [
     path('subscription/', OrganizationSubscriptionView.as_view(), name='subscription'),
     path('usage/', TenantUsageAPIView.as_view(), name='tenant-usage'),
     path('stripe-webhook/', StripeWebhookView.as_view(), name='stripe-webhook'),
+    path('stripe-checkout/', StripeCheckoutSessionView.as_view(), name='stripe-checkout'),
+    path('stripe-portal/', StripeBillingPortalView.as_view(), name='stripe-portal'),
     path('', include(router.urls)),
 ]

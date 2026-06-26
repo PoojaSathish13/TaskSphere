@@ -10,6 +10,17 @@ export const apiClient = axios.create({
   },
 });
 
+const setAuthHeader = (headers: any, token: string) => {
+  if (!headers) return;
+  const bearerToken = `Bearer ${token}`;
+  if (typeof headers.set === "function") {
+    headers.set("Authorization", bearerToken);
+  } else {
+    headers.Authorization = bearerToken;
+    headers["Authorization"] = bearerToken;
+  }
+};
+
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
@@ -33,7 +44,7 @@ apiClient.interceptors.request.use(
     const { accessToken, activeOrganizationId } = useAuthStore.getState();
 
     if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      setAuthHeader(config.headers, accessToken);
     }
 
     if (activeOrganizationId) {
@@ -66,7 +77,7 @@ apiClient.interceptors.response.use(
         })
           .then((token) => {
             if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+              setAuthHeader(originalRequest.headers, token as string);
             }
             return apiClient(originalRequest);
           })
@@ -88,15 +99,15 @@ apiClient.interceptors.response.use(
           refresh: refreshToken,
         });
 
-        // The simplejwt refresh returns a new access token
-        const newAccessToken = response.data.access;
-        // SimpleJWT can optionally rotate refresh tokens
-        const newRefreshToken = response.data.refresh || refreshToken;
+        // Handle enveloped response format from EnvelopeRenderer
+        const payload = response.data?.data || response.data;
+        const newAccessToken = payload?.access;
+        const newRefreshToken = payload?.refresh || refreshToken;
 
         setTokens(newAccessToken, newRefreshToken);
 
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          setAuthHeader(originalRequest.headers, newAccessToken);
         }
 
         processQueue(null, newAccessToken);

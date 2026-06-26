@@ -97,6 +97,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 class TaskDependencyViewSet(viewsets.ModelViewSet):
     """
     Manages dependency edges mapping blocker parameters.
+    Supports ?task=<task_id> filter to return deps for a specific task.
     """
     serializer_class = TaskDependencySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -105,7 +106,11 @@ class TaskDependencyViewSet(viewsets.ModelViewSet):
         organization = get_current_organization()
         if not organization:
             return TaskDependency.objects.none()
-        return TaskDependency.objects.filter(organization=organization)
+        qs = TaskDependency.objects.filter(organization=organization).select_related('task', 'depends_on')
+        task_id = self.request.query_params.get('task')
+        if task_id:
+            qs = qs.filter(task_id=task_id)
+        return qs
 
     def perform_create(self, serializer):
         organization = get_current_organization()

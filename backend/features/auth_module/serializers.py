@@ -7,6 +7,8 @@ from django.utils import timezone
 from .models_session import UserSession
 from features.tenant_module.serializers import OrganizationSerializer
 
+from shared.authentication import get_current_request
+
 User = get_user_model()
 
 
@@ -21,6 +23,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         token['first_name'] = user.first_name
         token['last_name'] = user.last_name
+        
+        # Inject Device Fingerprint hash (User-Agent binding)
+        request = get_current_request()
+        if request:
+            import hashlib
+            ua = request.META.get('HTTP_USER_AGENT', '')
+            ua_hash = hashlib.sha256(ua.encode('utf-8')).hexdigest()
+            token['ua_hash'] = ua_hash
         
         # Inject RBAC claims directly into the Access token payload
         memberships_data = {}
@@ -135,9 +145,11 @@ class UserSessionSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    memberships = TenantMembershipDetailSerializer(many=True, read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'mfa_enabled', 'created_at']
+        fields = ['id', 'email', 'first_name', 'last_name', 'mfa_enabled', 'memberships', 'created_at']
         read_only_fields = ['id', 'mfa_enabled', 'created_at']
 
 
@@ -170,8 +182,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         org = Organization.objects.create(name=name, slug=slug)
         
         admin_role, _ = Role.objects.get_or_create(
-            code='admin',
-            defaults={'name': 'Administrator'}
+            code='SUPER_ADMIN',
+            defaults={'name': 'Super Admin'}
         )
         
         TenantMembership.objects.create(
