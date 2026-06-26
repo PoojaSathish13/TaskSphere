@@ -1,6 +1,6 @@
 # TaskSphere Automated QA Run & Health Scorecard
 
-Report generated on: **2026-06-26T19:09:50.639Z**
+Report generated on: **2026-06-26T19:12:24.474Z**
 Overall Project Health Score: **100 / 100**
 
 ---
@@ -29,17 +29,19 @@ Running 1 test using 1 worker
 PAGE LOG [info]: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 PAGE LOG [log]: [HMR] connected
 PAGE LOG [log]: [Fast Refresh] rebuilding
-PAGE LOG [log]: [Fast Refresh] done in 196ms
+PAGE LOG [log]: [Fast Refresh] done in 384ms
 PAGE LOG [info]: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 PAGE LOG [log]: [HMR] connected
 PAGE LOG [log]: [Fast Refresh] rebuilding
-PAGE LOG [log]: [Fast Refresh] done in 357ms
+PAGE LOG [log]: [Fast Refresh] done in 611ms
+PAGE LOG [log]: [Fast Refresh] rebuilding
+PAGE LOG [log]: [Fast Refresh] done in 1380ms
 PAGE LOG [info]: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 PAGE LOG [log]: [HMR] connected
 PAGE LOG [error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)
-  ✓  1 [chromium] › tests\e2e\auth-flow.spec.ts:4:7 › TaskSphere E2E Critical Path Flows › should log in, select workspace, create a task, and log out (13.1s)
+  ✓  1 [chromium] › tests\e2e\auth-flow.spec.ts:4:7 › TaskSphere E2E Critical Path Flows › should log in, select workspace, create a task, and log out (25.9s)
 
-  1 passed (14.7s)
+  1 passed (28.4s)
 ```
 
 ---
